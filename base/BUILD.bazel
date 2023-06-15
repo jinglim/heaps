@@ -1,0 +1,7 @@
+cc_library(
+    name = "factory",
+    hdrs = [
+        "factory.h",
+    ],
+    visibility = ["//visibility:public"],
+)

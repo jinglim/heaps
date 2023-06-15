@@ -1,0 +1,26 @@
+cc_library(
+    name = "heaps",
+    srcs = [],
+    hdrs = [
+        "binary_heap.h",
+        "binomial_heap.h",
+        "heap.h",
+    ],
+)
+
+cc_binary(
+    name = "heap_test",
+    srcs = [
+        "heap_test.cc",
+    ],
+    deps = [
+        ":heaps",
+        "//base:factory",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:flags",
+        "@com_google_absl//absl/log:initialize",
+        "@com_google_absl//absl/strings",
+    ],
+)
