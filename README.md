@@ -9,7 +9,7 @@ This is a typical implementation, storing all elements in a vector. A hash map i
 ## Binomial Heap
 Reference: [https://en.wikipedia.org/wiki/Binomial_heap].
 
-This is implemented using a tree of BinomialNodes, where each node points to its parent node, its right sibling node and its child node.
+This is implemented using a list of root trees of BinomialNodes, where each node points to its parent node, its right sibling node and its child node.
 
 ## Next
 * Weak Heap
