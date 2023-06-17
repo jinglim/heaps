@@ -264,7 +264,7 @@ public:
   }
 
   static Factory<Heap<T>> factory() {
-    return Factory<Heap<T>>("BinomialHeap",
+    return Factory<Heap<T>>("Binomial Heap",
                             []() { return new BinomialHeap<T>{}; });
   }
 

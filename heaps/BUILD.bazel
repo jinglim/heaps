@@ -6,6 +6,7 @@ cc_library(
         "binomial_heap.h",
         "heap.h",
     ],
+    visibility = ["//visibility:public"],
 )
 
 cc_binary(
@@ -21,6 +22,5 @@ cc_binary(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/log:flags",
         "@com_google_absl//absl/log:initialize",
-        "@com_google_absl//absl/strings",
     ],
 )

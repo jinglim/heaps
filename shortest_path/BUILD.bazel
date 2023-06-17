@@ -1,0 +1,33 @@
+cc_library(
+    name = "shortest_path",
+    srcs = [
+    ],
+    hdrs = [
+        "bfs_shortest_path.h",
+        "dijkstra_shortest_path.h",
+        "shortest_path.h",
+    ],
+    deps = [
+        "//base:factory",
+        "//graph",
+        "//heaps",
+        "@com_google_absl//absl/log",
+    ]
+)
+
+cc_binary(
+    name = "shortest_path_test",
+    srcs = [
+        "shortest_path_test.cc",
+    ],
+    deps = [
+        ":shortest_path",
+        "//heaps",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:flags",
+        "@com_google_absl//absl/log:initialize",
+    ]
+)
+
