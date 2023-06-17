@@ -1,5 +1,10 @@
 # Heaps
-Heap data structures and their applications.
+This project is an exploration of Heap data structures and their use in shortest path computation.
+
+These are implemented in C++, built using Bazel.
+
+Dependencies:
+* abseil-cpp library.
 
 ## Binary Heap
 Reference: [https://en.wikipedia.org/wiki/Binary_heap].
@@ -11,10 +16,18 @@ Reference: [https://en.wikipedia.org/wiki/Binomial_heap].
 
 This is implemented using a list of root trees of BinomialNodes, where each node points to its parent node, its right sibling node and its child node.
 
+## Graph
+This is a relatively simple non-immutable Graph class. Use GraphBuilder to build a Graph object.
+
+## Shortest Path
+Shortest path implementations against a weighted directed graph.
+Two implementations are provided:
+* BfsShortestPath - a naive BFS traversal implementation.
+* DijkstraShortestPath - a typical Dijkstra's algorithm.
+
 ## Next
 * Weak Heap
 * 2-3 Heap
-* Dijkstra's shortest path using these heaps
 * Performance tests
 
 ## Feedback
