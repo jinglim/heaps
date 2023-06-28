@@ -72,7 +72,7 @@ private:
 template <typename T> void BinaryHeap<T>::Add(T value, int key) {
   int pos = static_cast<int>(elements_.size());
   elements_.emplace_back(HeapElement<T>{value, key});
-  CHECK(key_to_index_.insert(std::make_pair(key, pos)).second);
+  CHECK(key_to_index_.emplace(key, pos).second);
   SiftUp_(pos);
 }
 
@@ -104,14 +104,14 @@ template <typename T> HeapElement<T> BinaryHeap<T>::PopMinimum() {
 
   if (elements_.size() == 1) {
     elements_.pop_back();
-    return min;
+    return std::move(min);
   }
 
   // Move last element to the head of the heap and sift down.
   SetElement_(0, std::move(elements_.back()));
   elements_.pop_back();
   SiftDown_(0);
-  return min;
+  return std::move(min);
 }
 
 template <typename T>
@@ -165,7 +165,7 @@ template <typename T> void BinaryHeap<T>::SiftDown_(int pos) {
     }
 
     // Done if the child element is not smaller.
-    const auto &child_element = elements_[child];
+    auto &child_element = elements_[child];
     if (!(child_element.first < element.first)) {
       break;
     }
