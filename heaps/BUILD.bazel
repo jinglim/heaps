@@ -5,6 +5,7 @@ cc_library(
         "binary_heap.h",
         "binomial_heap.h",
         "heap.h",
+        "weak_heap.h",
     ],
     visibility = ["//visibility:public"],
 )

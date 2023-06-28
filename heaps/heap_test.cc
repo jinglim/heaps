@@ -10,16 +10,17 @@
 
 #include "heaps/binary_heap.h"
 #include "heaps/binomial_heap.h"
+#include "heaps/weak_heap.h"
 
 namespace {
 
 const unsigned kRandomSeed = 12346789;
 
 // If true, print out the heap operations.
-const bool kDebugPrintOperation = false;
+const bool kDebugPrintOperations = false;
 
 // If true, print out the heap in tree format after each operation.
-const bool kDebugPrintHeap = false;
+const bool kDebugPrintHeaps = false;
 
 // Keeps track of a set of int key values.
 class Keys {
@@ -60,7 +61,7 @@ public:
   HeapTester(std::unique_ptr<Heap<T>> heap) : heap_(std::move(heap)) {}
 
   void Add(T value, int key) {
-    if (kDebugPrintOperation) {
+    if (kDebugPrintOperations) {
       LOG(INFO) << "[Test] Add: " << value;
     }
     heap_->Add(value, key);
@@ -73,7 +74,7 @@ public:
 
   std::pair<T, int> PopMinimum() {
     auto min = heap_->Min();
-    if (kDebugPrintOperation) {
+    if (kDebugPrintOperations) {
       LOG(INFO) << "[Test] PopMinimum: " << min.first;
     }
 
@@ -89,7 +90,7 @@ public:
 
   // Perform a ReduceValue on the heap.
   void ReduceValue(T new_value, int key) {
-    if (kDebugPrintOperation) {
+    if (kDebugPrintOperations) {
       LOG(INFO) << "[Test] ReduceValue: " << new_value;
     }
 
@@ -170,7 +171,7 @@ public:
 private:
   // Check that the heap is well formed.
   void CheckHeap_() {
-    if (kDebugPrintHeap) {
+    if (kDebugPrintHeaps) {
       heap_->PrintTree(std::cerr, "[CheckHeap_]");
     }
     heap_->Validate();
@@ -213,6 +214,7 @@ void RunAllHeapTests() {
   std::vector<Factory<Heap<int>>> heap_factories{
       BinaryHeap<int>::factory(),
       BinomialHeap<int>::factory(),
+      WeakHeap<int>::factory(),
   };
 
   for (const auto &factory : heap_factories) {

@@ -16,8 +16,13 @@ Reference: [https://en.wikipedia.org/wiki/Binomial_heap].
 
 This is implemented using a list of root trees of BinomialNodes, where each node points to its parent node, its right sibling node and its child node.
 
+## Weak Heap
+Reference: [https://en.wikipedia.org/wiki/Weak_heap].
+
+This is implemented using a vector of elements, stored in "right-child left-sibling" format. Another vector of 0s or 1s indicate whether the children are swapped.
+
 ## Graph
-This is a relatively simple non-immutable Graph class. Use GraphBuilder to build a Graph object.
+This is a relatively simple immutable Graph class. Use GraphBuilder to build a Graph object.
 
 ## Shortest Path
 Shortest path implementations against a weighted directed graph.
@@ -26,10 +31,11 @@ Two implementations are provided:
 * DijkstraShortestPath - a typical Dijkstra's algorithm.
 
 ## Next
-* Weak Heap
 * 2-3 Heap
 * Performance tests
 
 ## Feedback
 Send comments and feedbacks to jinglim@gmail.com.
+[https://www.linkedin.com/in/jing-yee-lim/]
+
 Thanks!
