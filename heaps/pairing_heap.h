@@ -320,10 +320,7 @@ void PairingHeap<T>::PrintTree(std::ostream &out,
                                const std::string &label) const {
   out << std::endl
       << "-- Heap (" << size() << ") " << label << " --" << std::endl;
-  for (const auto *root = root_; root != nullptr; root = root->right()) {
-    out << "Tree" << std::endl;
-    root->PrintTree(out, 1);
-  }
+  root_->PrintTree(out, 1);
   out << std::endl;
 }
 
