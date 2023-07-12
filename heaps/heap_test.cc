@@ -10,6 +10,7 @@
 
 #include "heaps/binary_heap.h"
 #include "heaps/binomial_heap.h"
+#include "heaps/pairing_heap.h"
 #include "heaps/weak_heap.h"
 
 namespace {
@@ -215,12 +216,14 @@ void RunAllHeapTests() {
       BinaryHeap<int>::factory(),
       BinomialHeap<int>::factory(),
       WeakHeap<int>::factory(),
+      PairingHeap<int>::factory(),
   };
 
   for (const auto &factory : heap_factories) {
     LOG(INFO) << "Testing " << factory.name();
     RunTests(factory);
   }
+  LOG(INFO) << "Done";
 }
 
 } // namespace
@@ -230,6 +233,6 @@ int main(int argc, char *argv[]) {
   absl::InitializeLog();
 
   RunAllHeapTests();
-  std::cout << "Done." << std::endl;
+
   return 0;
 }
