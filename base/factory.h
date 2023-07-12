@@ -13,7 +13,9 @@ public:
   const std::string &name() const { return name_; }
 
   // Creates and returns an instance of T.
-  std::unique_ptr<T> operator()() const { return std::unique_ptr<T>(new_fn_()); }
+  std::unique_ptr<T> operator()() const {
+    return std::unique_ptr<T>(new_fn_());
+  }
 
 private:
   std::string name_;
