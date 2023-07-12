@@ -48,7 +48,7 @@ public:
   void set_right(BinomialHeapNode<T> *right) { right_ = right; }
 
   // Delete the entire tree rooted at this node.
-  static void DeleteTree(BinomialHeapNode<T>* node) {
+  static void DeleteTree(BinomialHeapNode<T> *node) {
     if (node != nullptr) {
       DeleteTree(node->child_);
       DeleteTree(node->right_);
@@ -265,9 +265,7 @@ template <typename T> class BinomialHeap : public Heap<T> {
 
 public:
   BinomialHeap() : root_(nullptr) {}
-  ~BinomialHeap() {
-     BinomialHeapNode<T>::DeleteTree(root_);
-  }
+  ~BinomialHeap() { BinomialHeapNode<T>::DeleteTree(root_); }
 
   static Factory<Heap<T>> factory() {
     return Factory<Heap<T>>("Binomial Heap",
