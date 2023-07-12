@@ -33,5 +33,4 @@ private:
   T default_value_;
 };
 
-
 #endif /* GRAPH_PROPERTIES_H_ */

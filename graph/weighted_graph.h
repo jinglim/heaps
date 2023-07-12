@@ -21,7 +21,8 @@ public:
 };
 
 // Print the weighted graph.
-template <typename T> void WeightedGraph<T>::PrintGraph(std::ostream &out) const {
+template <typename T>
+void WeightedGraph<T>::PrintGraph(std::ostream &out) const {
   out << "Graph(" << graph->name() << ")" << std::endl;
   for (const auto &vertex : graph->vertices()) {
     out << "Vertex " << vertex.id() << std::endl;

@@ -19,8 +19,8 @@ public:
       : id_(id), edges_(std::move(edges)) {}
   Vertex(Vertex &&other) : id_(other.id_), edges_(std::move(other.edges_)) {}
 
-  // Unique id that identifies the vertex. 
-  // Ranges from 0 to (num nodes in graph - 1). 
+  // Unique id that identifies the vertex.
+  // Ranges from 0 to (num nodes in graph - 1).
   VertexId id() const { return id_; };
 
   // List of all directed edges from this vertex.
@@ -54,12 +54,11 @@ private:
 // Use GraphBuilder to build the graph.
 class Graph {
 public:
-  Graph(const std::string &name,
-        std::vector<Vertex>&& vertices, int num_edges)
+  Graph(const std::string &name, std::vector<Vertex> &&vertices, int num_edges)
       : vertices_(std::move(vertices)), num_edges_(num_edges), name_(name) {}
   Graph(Graph &&other)
-      : vertices_(std::move(other.vertices_)),
-        num_edges_(other.num_edges_), name_(std::move(other.name_)) {}
+      : vertices_(std::move(other.vertices_)), num_edges_(other.num_edges_),
+        name_(std::move(other.name_)) {}
 
   // Name for printing, labeling the graph.
   const std::string &name() const { return name_; }

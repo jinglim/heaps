@@ -1,5 +1,7 @@
 #include "graph/graph.h"
 
+#include "absl/log/check.h"
+
 namespace {
 
 // Generates sequential int ids starting from 0.
@@ -36,7 +38,7 @@ public:
   }
 
   virtual EdgeId AddEdge(VertexId from_id, VertexId to_id) override {
-    assert(from_id < vertices_.size() && to_id < vertices_.size());
+    DCHECK(from_id < vertices_.size() && to_id < vertices_.size());
 
     EdgeId edge_id = edge_id_counter_.next();
     vertices_[from_id].edges.emplace_back(edge_id, to_id);
@@ -66,10 +68,10 @@ private:
 
 void Graph::Validate() {
   for (const auto &vertex : vertices_) {
-    assert(vertex.id() < num_vertices());
+    CHECK(vertex.id() < num_vertices());
 
     for (const auto &edge : vertex.edges()) {
-      assert(edge.id() < num_edges_);
+      CHECK(edge.id() < num_edges_);
     }
   }
 }

@@ -8,5 +8,8 @@ cc_library(
         "properties.h",
         "weighted_graph.h",
     ],
+    deps = [
+        "@com_google_absl//absl/log:check",
+    ],
     visibility = ["//visibility:public"],
 )
