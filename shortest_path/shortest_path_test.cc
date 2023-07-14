@@ -11,8 +11,9 @@
 #include "graph/weighted_graph.h"
 #include "heaps/binary_heap.h"
 #include "heaps/binomial_heap.h"
-#include "heaps/pairing_heap.h"
 #include "heaps/heap.h"
+#include "heaps/pairing_heap.h"
+#include "heaps/two_three_heap.h"
 #include "heaps/weak_heap.h"
 #include "shortest_path/bfs_shortest_path.h"
 #include "shortest_path/dijkstra_shortest_path.h"
@@ -158,8 +159,10 @@ void RunShortestPathTests() {
           BinomialHeap<DistanceNode<int>>::factory()),
       DijkstraShortestPath<int>::factory(
           WeakHeap<DistanceNode<int>>::factory()),
-            DijkstraShortestPath<int>::factory(
-          PairingHeap<DistanceNode<int>>::factory()),  
+      DijkstraShortestPath<int>::factory(
+          PairingHeap<DistanceNode<int>>::factory()),
+      DijkstraShortestPath<int>::factory(
+          TwoThreeHeap<DistanceNode<int>>::factory()),
   };
   ShortestPathTester tester{factories};
   tester.TestSimpleGraph();

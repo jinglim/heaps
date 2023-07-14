@@ -11,6 +11,7 @@
 #include "heaps/binary_heap.h"
 #include "heaps/binomial_heap.h"
 #include "heaps/pairing_heap.h"
+#include "heaps/two_three_heap.h"
 #include "heaps/weak_heap.h"
 
 namespace {
@@ -213,10 +214,9 @@ void RunTests(Factory<Heap<int>> factory) {
 // Run heap tests for all the heap implementations.
 void RunAllHeapTests() {
   std::vector<Factory<Heap<int>>> heap_factories{
-      BinaryHeap<int>::factory(),
-      BinomialHeap<int>::factory(),
-      WeakHeap<int>::factory(),
-      PairingHeap<int>::factory(),
+      BinaryHeap<int>::factory(),   BinomialHeap<int>::factory(),
+      WeakHeap<int>::factory(),     PairingHeap<int>::factory(),
+      TwoThreeHeap<int>::factory(),
   };
 
   for (const auto &factory : heap_factories) {

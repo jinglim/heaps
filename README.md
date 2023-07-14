@@ -26,6 +26,11 @@ Reference: [https://en.wikipedia.org/wiki/Pairing_heap].
 
 This is implemented using a tree of PairingHeapNodes, where each node points to its left (previous sibling or parent) node, its right sibling node and its child node.
 
+## 2-3 Heap
+Reference: [https://en.wikipedia.org/wiki/2%E2%80%933_heap].
+
+The implementation of this heap is quite challenging. Can probably be simplified and optimized.
+
 ## Graph
 This is a relatively simple immutable Graph class. Use GraphBuilder to build a Graph object.
 
