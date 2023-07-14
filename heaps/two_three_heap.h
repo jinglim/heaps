@@ -446,7 +446,7 @@ public:
     return Factory<Heap<T>>("2-3 Heap", []() { return new TwoThreeHeap<T>(); });
   }
 
-  TwoThreeHeap() : max_root_dim_(0) {}
+  TwoThreeHeap() : max_root_dim_(-1) {}
 
   virtual ~TwoThreeHeap() {
     for (auto *sentinel : sentinels_) {
@@ -831,7 +831,7 @@ template <typename T> void TwoThreeHeap<T>::ClearRoot_(short dim) {
   if (dim == max_root_dim_) {
     do {
       max_root_dim_--;
-    } while (sentinels_[max_root_dim_]->child() == nullptr);
+    } while (max_root_dim_ >= 0 && sentinels_[max_root_dim_]->child() == nullptr);
   }
 }
 
