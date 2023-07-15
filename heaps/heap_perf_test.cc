@@ -74,6 +74,26 @@ public:
   }
 };
 
+// Performance test for adding and popping from a Heap. ie. Sorting.
+class AddAndPopMinimumPerfTestRunner : public PerfTestRunner<PerfTestParams> {
+public:
+  void Run(PerfTimer *timer, const PerfTestParams &params) const override {
+    std::unique_ptr<Heap<int>> heap_pointer(params.heap_factory());
+    auto *heap = heap_pointer.get();
+
+    timer->Start();
+    for (int i = 0; i < params.num_elements; ++i) {
+      int value = std::rand();
+      heap->Add(value, i);
+    }
+    for (int i = 0; i < params.num_elements; ++i) {
+      heap->PopMinimum();
+    }
+    timer->Stop();
+    timer->Report("AddAndPopMinimum");
+  }
+};
+
 // Performance test for reducing a value in a Heap.
 class ReduceValuePerfTestRunner : public PerfTestRunner<PerfTestParams> {
 public:
@@ -195,6 +215,10 @@ void RunPerfTests(Factory<Heap<int>> factory) {
   }
   {
     PopMinimumPerfTestRunner runner;
+    RunOnePerfTestAve(&runner, params, num_runs);
+  }
+  {
+    AddAndPopMinimumPerfTestRunner runner;
     RunOnePerfTestAve(&runner, params, num_runs);
   }
   {
