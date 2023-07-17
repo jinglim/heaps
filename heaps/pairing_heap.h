@@ -16,9 +16,8 @@
 // A node used in Pairing Heaps.
 template <typename T> class PairingHeapNode {
 public:
-  PairingHeapNode(T value, int key)
-      : value_(value), key_(key), child_(nullptr), left_(nullptr),
-        right_(nullptr) {}
+  PairingHeapNode(T key, int id)
+      : key_(key), id_(id), child_(nullptr), left_(nullptr), right_(nullptr) {}
 
   static void DeleteTree(PairingHeapNode<T> *node) {
     if (node != nullptr) {
@@ -28,10 +27,10 @@ public:
     }
   }
 
-  const T &value() const { return value_; }
-  void set_value(T value) { value_ = value; }
+  const T &key() const { return key_; }
+  void set_key(T key) { key_ = key; }
 
-  int key() const { return key_; }
+  int id() const { return id_; }
 
   // Returns the child node.
   PairingHeapNode<T> *child() const { return child_; }
@@ -58,7 +57,7 @@ public:
   void PrintTree(std::ostream &out, int level) const;
 
   // Validate the fields.
-  void Validate(std::unordered_set<int> *seen_keys) const;
+  void Validate(std::unordered_set<int> *seen_ids) const;
 
   // Merge two trees.
   static PairingHeapNode<T> *MergeTrees(PairingHeapNode<T> *a,
@@ -68,10 +67,10 @@ public:
   static PairingHeapNode<T> *MergeTreeList(PairingHeapNode<T> *tree_list);
 
 private:
-  T value_;
+  T key_;
 
-  // A key that uniquely identifies this node.
-  int key_;
+  // An int that uniquely identifies this node.
+  int id_;
 
   // Points to the first child.
   PairingHeapNode<T> *child_;
@@ -97,7 +96,7 @@ void PairingHeapNode<T>::AddChild(PairingHeapNode<T> *child) {
 template <typename T>
 PairingHeapNode<T> *PairingHeapNode<T>::MergeTrees(PairingHeapNode<T> *a,
                                                    PairingHeapNode<T> *b) {
-  if (a->value_ < b->value_) {
+  if (a->key_ < b->key_) {
     a->AddChild(b);
     return a;
   } else {
@@ -163,16 +162,16 @@ template <typename T> void PairingHeapNode<T>::DetachFromParent() {
 
 template <typename T> std::string PairingHeapNode<T>::DebugString() const {
   std::stringstream out;
-  out << value_ << " [key:" << key_ << "]";
+  out << key_ << " [id:" << id_ << "]";
 
   if (left_ != nullptr) {
-    out << "[left:" << left_->value_ << "]";
+    out << "[left:" << left_->key_ << "]";
   }
   if (right_ != nullptr) {
-    out << "[right=" << right_->value() << "]";
+    out << "[right=" << right_->key() << "]";
   }
   if (child_ != nullptr) {
-    out << "[child=" << child_->value() << "]";
+    out << "[child=" << child_->key() << "]";
   }
 
   return out.str();
@@ -203,19 +202,19 @@ void PairingHeapNode<T>::PrintTree(std::ostream &out, int level) const {
 }
 
 template <typename T>
-void PairingHeapNode<T>::Validate(std::unordered_set<int> *seen_keys) const {
-  if (seen_keys != nullptr) {
-    CHECK(seen_keys->insert(key_).second);
+void PairingHeapNode<T>::Validate(std::unordered_set<int> *seen_ids) const {
+  if (seen_ids != nullptr) {
+    CHECK(seen_ids->insert(id_).second);
   }
 
   if (child_ != nullptr) {
     CHECK(child_->left_ == this);
-    child_->Validate(seen_keys);
+    child_->Validate(seen_ids);
   }
 
   if (right_ != nullptr) {
     CHECK(right_->left_ == this);
-    right_->Validate(seen_keys);
+    right_->Validate(seen_ids);
   }
 }
 
@@ -231,22 +230,22 @@ public:
 
   // Returns number of elements.
   virtual int size() const override {
-    return static_cast<int>(key_to_node_.size());
+    return static_cast<int>(id_to_node_.size());
   }
 
-  // Adds an value with the associated key.
-  virtual void Add(T value, int key) override;
+  // Adds an element with key and unique int id.
+  virtual void Add(T key, int id) override;
 
-  // Updates with a lower value.
-  virtual void ReduceValue(T new_value, int key) override;
+  // Updates with a lower key.
+  virtual void ReduceKey(T new_key, int id) override;
 
-  // Looks up a value by key. Returns nullptr if not found.
-  virtual const T *LookUp(int key) const override;
+  // Looks up a key by id. Returns nullptr if not found.
+  virtual const T *LookUp(int id) const override;
 
   // Returns the min element.
   virtual HeapElement<T> Min() const override;
 
-  // Pops and returns the minimum value.
+  // Pops and returns the minimum key.
   virtual HeapElement<T> PopMinimum() override;
 
   // Print for debugging.
@@ -260,13 +259,13 @@ private:
   // The min root node. Maybe null.
   PairingHeapNode<T> *root_;
 
-  // Map of each key to the node.
-  std::unordered_map<int, PairingHeapNode<T> *> key_to_node_;
+  // Map of each id to the node.
+  std::unordered_map<int, PairingHeapNode<T> *> id_to_node_;
 };
 
-template <typename T> void PairingHeap<T>::Add(T value, int key) {
-  PairingHeapNode<T> *node = new PairingHeapNode<T>{value, key};
-  CHECK(key_to_node_.emplace(key, node).second);
+template <typename T> void PairingHeap<T>::Add(T key, int id) {
+  PairingHeapNode<T> *node = new PairingHeapNode<T>{key, id};
+  CHECK(id_to_node_.emplace(id, node).second);
 
   // If no root. Make this the root.
   if (root_ == nullptr) {
@@ -276,10 +275,10 @@ template <typename T> void PairingHeap<T>::Add(T value, int key) {
   }
 }
 
-template <typename T> void PairingHeap<T>::ReduceValue(T new_value, int key) {
-  auto *node = key_to_node_[key];
-  DCHECK(!(node->value() < new_value));
-  node->set_value(new_value);
+template <typename T> void PairingHeap<T>::ReduceKey(T new_key, int id) {
+  auto *node = id_to_node_[id];
+  DCHECK(!(node->key() < new_key));
+  node->set_key(new_key);
 
   if (node == root_) {
     return;
@@ -288,17 +287,17 @@ template <typename T> void PairingHeap<T>::ReduceValue(T new_value, int key) {
   root_ = PairingHeapNode<T>::MergeTrees(root_, node);
 }
 
-template <typename T> const T *PairingHeap<T>::LookUp(int key) const {
-  const auto it = key_to_node_.find(key);
-  if (it == key_to_node_.end()) {
+template <typename T> const T *PairingHeap<T>::LookUp(int id) const {
+  const auto it = id_to_node_.find(id);
+  if (it == id_to_node_.end()) {
     return nullptr;
   }
-  return &it->second->value();
+  return &it->second->key();
 }
 
 template <typename T> HeapElement<T> PairingHeap<T>::Min() const {
   DCHECK(size() > 0);
-  return std::make_pair(root_->value(), root_->key());
+  return std::make_pair(root_->key(), root_->id());
 }
 
 template <typename T> HeapElement<T> PairingHeap<T>::PopMinimum() {
@@ -309,8 +308,8 @@ template <typename T> HeapElement<T> PairingHeap<T>::PopMinimum() {
   auto *children = min_root->child();
   root_ = PairingHeapNode<T>::MergeTreeList(children);
 
-  auto result = std::make_pair(min_root->value(), min_root->key());
-  key_to_node_.erase(min_root->key());
+  auto result = std::make_pair(min_root->key(), min_root->id());
+  id_to_node_.erase(min_root->id());
   delete min_root;
   return result;
 }
@@ -325,21 +324,21 @@ void PairingHeap<T>::PrintTree(std::ostream &out,
 }
 
 template <typename T> void PairingHeap<T>::Validate() const {
-  std::unordered_set<int> seen_keys;
+  std::unordered_set<int> seen_ids;
   if (root_ != nullptr) {
     CHECK(root_->left() == nullptr);
     CHECK(root_->right() == nullptr);
 
-    root_->Validate(&seen_keys);
+    root_->Validate(&seen_ids);
   }
 
-  if (seen_keys.size() != size()) {
-    for (const auto &entry : key_to_node_) {
-      if (seen_keys.find(entry.first) == seen_keys.end()) {
-        LOG(ERROR) << "Key not seen: " << entry.first << std::endl;
+  if (seen_ids.size() != size()) {
+    for (const auto &entry : id_to_node_) {
+      if (seen_ids.find(entry.first) == seen_ids.end()) {
+        LOG(ERROR) << "Id not seen: " << entry.first << std::endl;
       }
     }
-    LOG(FATAL) << "Some keys are missing";
+    LOG(FATAL) << "Some ids are missing";
   }
 }
 

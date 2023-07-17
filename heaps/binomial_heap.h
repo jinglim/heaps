@@ -17,18 +17,18 @@
 // A node used in Binomial Heaps.
 template <typename T> class BinomialHeapNode {
 public:
-  BinomialHeapNode(T value, int key)
-      : value_(value), key_(key), dimension_(0), parent_(nullptr),
-        child_(nullptr), right_(nullptr) {}
+  BinomialHeapNode(T key, int id)
+      : key_(key), id_(id), dimension_(0), parent_(nullptr), child_(nullptr),
+        right_(nullptr) {}
 
   // Used as a sentinal node only.
   BinomialHeapNode() : right_(nullptr) {}
 
-  const T &value() const { return value_; }
-  void set_value(T value) { value_ = value; }
+  const T &key() const { return key_; }
+  void set_key(T key) { key_ = key; }
 
-  int key() const { return key_; }
-  void set_key(int key) { key_ = key; }
+  int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
 
   short dimension() const { return dimension_; }
 
@@ -70,7 +70,7 @@ public:
   void PrintTree(std::ostream &out, int level) const;
 
   // Validate the fields.
-  void Validate(std::unordered_set<int> *seen_keys) const;
+  void Validate(std::unordered_set<int> *seen_ids) const;
 
   // Merge two trees a and b.
   static BinomialHeapNode<T> *MergeTrees(BinomialHeapNode<T> *a,
@@ -81,10 +81,10 @@ public:
                                             BinomialHeapNode<T> *b);
 
 private:
-  T value_;
+  T key_;
 
-  // A key that uniquely identifies this node.
-  int key_;
+  // An int id that uniquely identifies this node.
+  int id_;
 
   // Dimension of the tree at this node.
   short dimension_;
@@ -104,7 +104,7 @@ BinomialHeapNode<T> *BinomialHeapNode<T>::MergeTrees(BinomialHeapNode<T> *a,
                                                      BinomialHeapNode<T> *b) {
   DCHECK(a->dimension_ == b->dimension_);
 
-  if (b->value_ < a->value_) {
+  if (b->key_ < a->key_) {
     auto *temp = b;
     b = a;
     a = temp;
@@ -202,19 +202,19 @@ void BinomialHeapNode<T>::PrintTree(std::ostream &out,
 
 template <typename T> std::string BinomialHeapNode<T>::DebugString() const {
   std::stringstream out;
-  out << value_ << " [key:" << key_ << "][dim:" << dimension_ << "]";
+  out << key_ << " [id:" << id_ << "][dim:" << dimension_ << "]";
 
   if (parent_ != nullptr) {
-    out << "[parent:" << parent_->value_ << "]";
+    out << "[parent:" << parent_->key_ << "]";
   } else {
     out << "[parent:null]";
   }
 
   if (right_ != nullptr) {
-    out << "[right=" << right_->value() << "]";
+    out << "[right=" << right_->key_ << "]";
   }
   if (child_ != nullptr) {
-    out << "[child=" << child_->value() << "]";
+    out << "[child=" << child_->key_ << "]";
   }
 
   return out.str();
@@ -237,20 +237,20 @@ void BinomialHeapNode<T>::PrintTree(std::ostream &out, int level) const {
 }
 
 template <typename T>
-void BinomialHeapNode<T>::Validate(std::unordered_set<int> *seen_keys) const {
-  if (seen_keys != nullptr) {
-    CHECK(seen_keys->insert(key_).second);
+void BinomialHeapNode<T>::Validate(std::unordered_set<int> *seen_ids) const {
+  if (seen_ids != nullptr) {
+    CHECK(seen_ids->insert(id_).second);
   }
 
   if (dimension_ > 0) {
     CHECK(child_->parent_ == this);
     CHECK(child_->dimension_ == dimension_ - 1);
-    child_->Validate(seen_keys);
+    child_->Validate(seen_ids);
 
     if (!is_root()) {
       CHECK(right_->parent_ == parent_);
       CHECK(right_->dimension_ == dimension_ - 1);
-      right_->Validate(seen_keys);
+      right_->Validate(seen_ids);
     }
   } else {
     CHECK(child_ == nullptr);
@@ -274,22 +274,22 @@ public:
 
   // Returns number of elements.
   virtual int size() const override {
-    return static_cast<int>(key_to_node_.size());
+    return static_cast<int>(id_to_node_.size());
   }
 
-  // Adds an value with the associated key.
-  virtual void Add(T value, int key) override;
+  // Adds an elementn with given key and unique int key.
+  virtual void Add(T key, int id) override;
 
-  // Updates with a lower value.
-  virtual void ReduceValue(T new_value, int key) override;
+  // Updates with a lower key.
+  virtual void ReduceKey(T new_key, int id) override;
 
-  // Looks up a value by key. Returns nullptr if not found.
-  virtual const T *LookUp(int key) const override;
+  // Looks up a key by id. Returns nullptr if not found.
+  virtual const T *LookUp(int id) const override;
 
   // Returns the min element.
   virtual HeapElement<T> Min() const override;
 
-  // Pops and returns the minimum value.
+  // Pops and returns the minimum key.
   virtual HeapElement<T> PopMinimum() override;
 
   // Print for debugging.
@@ -309,13 +309,13 @@ private:
   // Linked list of root nodes starting from lowest dimension.
   BinomialHeapNode<T> *root_;
 
-  // Map of each key to the node.
-  std::unordered_map<int, BinomialHeapNode<T> *> key_to_node_;
+  // Map of each id to the node.
+  std::unordered_map<int, BinomialHeapNode<T> *> id_to_node_;
 };
 
-template <typename T> void BinomialHeap<T>::Add(T value, int key) {
-  BinomialHeapNode<T> *node = new BinomialHeapNode<T>{value, key};
-  CHECK(key_to_node_.insert(std::make_pair(key, node)).second);
+template <typename T> void BinomialHeap<T>::Add(T key, int id) {
+  BinomialHeapNode<T> *node = new BinomialHeapNode<T>{key, id};
+  CHECK(id_to_node_.emplace(id, node).second);
 
   // If no root. Make this the root.
   if (root_ == nullptr) {
@@ -325,24 +325,24 @@ template <typename T> void BinomialHeap<T>::Add(T value, int key) {
   }
 }
 
-template <typename T> void BinomialHeap<T>::ReduceValue(T new_value, int key) {
-  auto *node = key_to_node_[key];
-  node->set_value(new_value);
+template <typename T> void BinomialHeap<T>::ReduceKey(T new_key, int id) {
+  auto *node = id_to_node_[id];
+  node->set_key(new_key);
   SiftUp_(node);
 }
 
-template <typename T> const T *BinomialHeap<T>::LookUp(int key) const {
-  const auto it = key_to_node_.find(key);
-  if (it == key_to_node_.end()) {
+template <typename T> const T *BinomialHeap<T>::LookUp(int id) const {
+  const auto it = id_to_node_.find(id);
+  if (it == id_to_node_.end()) {
     return nullptr;
   }
-  return &it->second->value();
+  return &it->second->key();
 }
 
 template <typename T> HeapElement<T> BinomialHeap<T>::Min() const {
   BinomialHeapNode<T> *unused_node;
   const auto *min_node = Min_(&unused_node);
-  return std::make_pair(min_node->value(), min_node->key());
+  return std::make_pair(min_node->key(), min_node->id());
 }
 
 template <typename T>
@@ -355,7 +355,7 @@ BinomialHeap<T>::Min_(BinomialHeapNode<T> **prev_node) const {
   BinomialHeapNode<T> *min_root_prev = nullptr;
   for (auto *root = root_->right(); root != nullptr;
        prev = root, root = root->right()) {
-    if (root->value() < min_root->value()) {
+    if (root->key() < min_root->key()) {
       min_root = root;
       min_root_prev = prev;
     }
@@ -377,35 +377,35 @@ template <typename T> HeapElement<T> BinomialHeap<T>::PopMinimum() {
   auto *children = min_root->DetachChildren();
   root_ = BinomialHeapNode<T>::MergeTreeList(root_, children);
 
-  auto result = std::make_pair(min_root->value(), min_root->key());
-  key_to_node_.erase(min_root->key());
+  auto result = std::make_pair(min_root->key(), min_root->id());
+  id_to_node_.erase(min_root->id());
   delete min_root;
   return result;
 }
 
 template <typename T> void BinomialHeap<T>::SiftUp_(BinomialHeapNode<T> *node) {
-  T value = node->value();
-  int key = node->key();
+  T key = node->key();
+  int id = node->id();
   while (true) {
     auto *parent = node->parent();
 
-    // Done if parent is root or has smaller value.
-    if (parent == nullptr || !(value < parent->value())) {
+    // Done if parent is root or has smaller key.
+    if (parent == nullptr || !(key < parent->key())) {
       break;
     }
 
     // Move the parent down.
-    node->set_value(parent->value());
     node->set_key(parent->key());
-    key_to_node_[parent->key()] = node;
+    node->set_id(parent->id());
+    id_to_node_[parent->id()] = node;
 
     node = parent;
   }
 
   // Finally place element at pos.
-  node->set_value(value);
   node->set_key(key);
-  key_to_node_[key] = node;
+  node->set_id(id);
+  id_to_node_[id] = node;
 }
 
 template <typename T>
@@ -422,21 +422,21 @@ void BinomialHeap<T>::PrintTree(std::ostream &out,
 
 template <typename T> void BinomialHeap<T>::Validate() const {
   int prev_dimension = -1;
-  std::unordered_set<int> seen_keys;
+  std::unordered_set<int> seen_ids;
   for (auto *root = root_; root != nullptr; root = root->right()) {
     CHECK(root->is_root());
     CHECK(root->dimension() > prev_dimension);
-    root->Validate(&seen_keys);
+    root->Validate(&seen_ids);
     prev_dimension = root->dimension();
   }
 
-  if (seen_keys.size() != size()) {
-    for (const auto &entry : key_to_node_) {
-      if (seen_keys.find(entry.first) == seen_keys.end()) {
-        LOG(ERROR) << "Key not seen: " << entry.first << std::endl;
+  if (seen_ids.size() != size()) {
+    for (const auto &entry : id_to_node_) {
+      if (seen_ids.find(entry.first) == seen_ids.end()) {
+        LOG(ERROR) << "Id not seen: " << entry.first << std::endl;
       }
     }
-    LOG(FATAL) << "Some keys are missing";
+    LOG(FATAL) << "Some ids are missing";
   }
 }
 

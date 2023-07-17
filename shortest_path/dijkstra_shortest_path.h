@@ -99,7 +99,7 @@ DijkstraShortestPath<T>::Run(const WeightedGraph<T> &weighted_graph,
         prev_vertex_map[to_id] = min_distance_node.vertex_id;
       } else if (total_distance < to_node->distance) {
         // Update the DistanceNode with a shorter distance.
-        heap->ReduceValue(DistanceNode<T>{to_id, total_distance}, to_id);
+        heap->ReduceKey(DistanceNode<T>{to_id, total_distance}, to_id);
         prev_vertex_map[to_id] = min_distance_node.vertex_id;
       }
     }

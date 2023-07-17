@@ -5,7 +5,8 @@
 
 #include <utility>
 
-// An element in a Heap. Each elements consists of a T value and an int key.
+// An element in a Heap. Each elements consists of a T key and an unique int
+// identifier.
 template <typename T> using HeapElement = std::pair<T, int>;
 
 // Base class for a Heap data structure.
@@ -20,19 +21,19 @@ public:
   // Returns true if it's empty.
   bool empty() const;
 
-  // Adds a value with its associated key.
-  virtual void Add(T value, int key) = 0;
+  // Adds an element with the given key and unique id.
+  virtual void Add(T key, int id) = 0;
 
-  // Updates an element with a lower value.
-  virtual void ReduceValue(T new_value, int key) = 0;
+  // Updates an element with a lower key.
+  virtual void ReduceKey(T new_key, int id) = 0;
 
-  // Looks up a value by key. Returns nullptr if not found.
-  virtual const T *LookUp(int key) const = 0;
+  // Looks up a key by id. Returns nullptr if not found.
+  virtual const T *LookUp(int id) const = 0;
 
   // Returns the min element.
   virtual HeapElement<T> Min() const = 0;
 
-  // Pops and returns the minimum value.
+  // Pops and returns the minimum key.
   virtual HeapElement<T> PopMinimum() = 0;
 
   // Print for debugging.

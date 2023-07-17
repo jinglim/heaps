@@ -18,14 +18,14 @@
 // The partner_ field links the two nodes to each other.
 template <typename T> class TwoThreeNode {
 public:
-  TwoThreeNode(T value, int key)
-      : value_(value), key_(key), dimension_(0), is_secondary_(false),
+  TwoThreeNode(T key, int id)
+      : key_(key), id_(id), dimension_(0), is_secondary_(false),
         partner_(nullptr), parent_(nullptr), child_(nullptr), left_(this),
         right_(this) {}
 
   // For the root only.
   TwoThreeNode()
-      : key_(-1), dimension_(0), is_secondary_(false), partner_(nullptr),
+      : id_(-1), dimension_(0), is_secondary_(false), partner_(nullptr),
         parent_(nullptr), child_(nullptr), left_(this), right_(this) {}
 
   ~TwoThreeNode() {
@@ -43,10 +43,10 @@ public:
     }
   }
 
-  const T &value() const { return value_; }
-  void set_value(T value) { value_ = value; }
+  const T &key() const { return key_; }
+  void set_key(T key) { key_ = key; }
 
-  int key() const { return key_; }
+  int id() const { return id_; }
   short dimension() const { return dimension_; }
 
   bool is_root() const { return parent_->parent_ == nullptr; }
@@ -109,13 +109,13 @@ public:
   void PrintTree(std::ostream &out, int level) const;
 
   // Validate the tree structure under this node.
-  void Validate(std::unordered_set<int> *seen_keys = nullptr) const;
+  void Validate(std::unordered_set<int> *seen_ids = nullptr) const;
 
 private:
-  T value_;
+  T key_;
 
-  // A key that uniquely identifies this node.
-  int key_;
+  // An id that uniquely identifies this node.
+  int id_;
 
   // Dimension of the tree at this node.
   short dimension_;
@@ -163,7 +163,7 @@ template <typename T> void TwoThreeNode<T>::DetachFromTrunk() {
 template <typename T>
 void TwoThreeNode<T>::AddChild(TwoThreeNode<T> *new_child) {
   DCHECK(!new_child->is_secondary_);
-  DCHECK(!(new_child->value_ < value_));
+  DCHECK(!(new_child->key_ < key_));
   DCHECK(new_child->dimension_ == dimension_);
 
   dimension_++;
@@ -281,7 +281,7 @@ TwoThreeNode<T>::MergeTrees(TwoThreeNode<T> *a, TwoThreeNode<T> *b) {
   DCHECK(a->dimension_ == b->dimension_);
 
   // Make a the smaller tree.
-  if (b->value_ < a->value_) {
+  if (b->key_ < a->key_) {
     std::swap(a, b);
   }
 
@@ -308,7 +308,7 @@ TwoThreeNode<T>::MergeTrees(TwoThreeNode<T> *a, TwoThreeNode<T> *b) {
   if (b_partner == nullptr) {
     a_partner->DetachFromTrunk();
 
-    if (a_partner->value_ < b->value_) {
+    if (a_partner->key_ < b->key_) {
       a_partner->AttachPartner(b);
       a->AddChild(a_partner);
     } else {
@@ -329,35 +329,35 @@ TwoThreeNode<T>::MergeTrees(TwoThreeNode<T> *a, TwoThreeNode<T> *b) {
 // Debug information about this node.
 template <typename T> std::string TwoThreeNode<T>::DebugString() const {
   std::stringstream out;
-  out << value_ << " [key:" << key_ << "][dim:" << dimension_ << "]";
+  out << key_ << " [id:" << id_ << "][dim:" << dimension_ << "]";
 
   if (parent_ != nullptr) {
     if (is_root()) {
       out << "[root]";
     } else {
-      out << "[parent:" << parent_->value_ << "]";
+      out << "[parent:" << parent_->key_ << "]";
     }
   } else {
     out << "[parent:null]";
   }
 
   if (is_secondary_) {
-    out << "[2nd of " << partner_->value_ << "]";
+    out << "[2nd of " << partner_->key_ << "]";
   } else if (partner_ != nullptr) {
-    out << "[partner=" << partner_->value_ << "]";
+    out << "[partner=" << partner_->key_ << "]";
   }
   if (left_ == this) {
     out << "[left=self]";
   } else {
-    out << "[left=" << left_->value_ << "]";
+    out << "[left=" << left_->key_ << "]";
   }
   if (right_ == this) {
     out << "[right=self]";
   } else {
-    out << "[right=" << right_->value_ << "]";
+    out << "[right=" << right_->key_ << "]";
   }
   if (child_ != nullptr) {
-    out << "[child=" << child_->value_ << "]";
+    out << "[child=" << child_->key_ << "]";
   }
 
   return out.str();
@@ -395,9 +395,9 @@ void TwoThreeNode<T>::PrintTree(std::ostream &out, int level) const {
 }
 
 template <typename T>
-void TwoThreeNode<T>::Validate(std::unordered_set<int> *seen_keys) const {
-  if (seen_keys != nullptr) {
-    CHECK(seen_keys->insert(key_).second);
+void TwoThreeNode<T>::Validate(std::unordered_set<int> *seen_ids) const {
+  if (seen_ids != nullptr) {
+    CHECK(seen_ids->insert(id_).second);
   }
 
   if (partner_ == nullptr) {
@@ -409,12 +409,12 @@ void TwoThreeNode<T>::Validate(std::unordered_set<int> *seen_keys) const {
   }
 
   if (!is_secondary_ && partner_ != nullptr) {
-    CHECK(!(partner_->value_ < value_));
+    CHECK(!(partner_->key_ < key_));
     CHECK(partner_->partner_ == this);
     CHECK(partner_->parent_ == parent_);
     CHECK(partner_->dimension_ == dimension_);
     CHECK(partner_->is_secondary_);
-    partner_->Validate(seen_keys);
+    partner_->Validate(seen_ids);
   }
 
   if (dimension_ > 0) {
@@ -424,12 +424,12 @@ void TwoThreeNode<T>::Validate(std::unordered_set<int> *seen_keys) const {
       CHECK(child != nullptr);
       CHECK(child_dim >= 0);
 
-      CHECK(!(child->value_ < value_));
+      CHECK(!(child->key_ < key_));
       CHECK(!child->is_secondary_);
       CHECK(child->dimension() == child_dim);
       CHECK(child->right_->left_ == child);
       CHECK(child->parent_ == this);
-      child->Validate(seen_keys);
+      child->Validate(seen_ids);
 
       child = child->right_;
       child_dim--;
@@ -437,8 +437,8 @@ void TwoThreeNode<T>::Validate(std::unordered_set<int> *seen_keys) const {
   }
 }
 
-// 2-3 Heap is a heap data structure that allows the min value to be
-// computed in O(log n) time, and a value to be decreased in O(1)
+// 2-3 Heap is a heap data structure that allows the min key to be
+// computed in O(log n) time, and a key to be decreased in O(1)
 // amortized time.
 template <typename T> class TwoThreeHeap : public Heap<T> {
 public:
@@ -456,24 +456,24 @@ public:
 
   // Number of nodes in the heap.
   virtual int size() const override {
-    return static_cast<int>(key_to_node_.size());
+    return static_cast<int>(id_to_node_.size());
   }
 
-  // Add an element with the given value and unique key.
-  virtual void Add(T value, int key) override;
+  // Add an element with the given key and unique id.
+  virtual void Add(T key, int id) override;
 
-  // Returns the element as a (value, key) pair.
+  // Returns the element as a (key, id) pair.
   virtual std::pair<T, int> Min() const override;
 
-  // Remove the min value element and return its (value, key).
+  // Remove the min element and return its (key, id).
   // Amortized code: O(log n).
   virtual std::pair<T, int> PopMinimum() override;
 
-  // Decrease the value of a node.
-  virtual void ReduceValue(T new_value, int key) override;
+  // Decrease the key of a node.
+  virtual void ReduceKey(T new_key, int id) override;
 
-  // Looks up a value by key. Returns nullptr if not found.
-  virtual const T *LookUp(int key) const override;
+  // Looks up a key by id. Returns nullptr if not found.
+  virtual const T *LookUp(int id) const override;
 
   // Print the heap in tree format.
   virtual void PrintTree(std::ostream &out,
@@ -483,7 +483,7 @@ public:
   virtual void Validate() const override;
 
 private:
-  // Returns the min value.
+  // Returns the node with the min key.
   TwoThreeNode<T> *Min_() const;
 
   // Inserts a new tree to the heap.
@@ -516,20 +516,19 @@ private:
   // Highest dimension of the roots.
   int max_root_dim_;
 
-  // Map of each key to the node.
-  std::unordered_map<int, TwoThreeNode<T> *> key_to_node_;
+  // Map of each id to the node.
+  std::unordered_map<int, TwoThreeNode<T> *> id_to_node_;
 };
 
-template <typename T> void TwoThreeHeap<T>::Add(T value, int key) {
-  DCHECK(key_to_node_.find(key) == key_to_node_.end());
-  TwoThreeNode<T> *node = new TwoThreeNode<T>(value, key);
+template <typename T> void TwoThreeHeap<T>::Add(T key, int id) {
+  TwoThreeNode<T> *node = new TwoThreeNode<T>{key, id};
   InsertRoot_(node);
-  key_to_node_[key] = node;
+  CHECK(id_to_node_.emplace(id, node).second);
 }
 
 template <typename T> std::pair<T, int> TwoThreeHeap<T>::Min() const {
   const auto *min_node = Min_();
-  return std::make_pair(min_node->value(), min_node->key());
+  return std::make_pair(min_node->key(), min_node->id());
 }
 
 template <typename T> std::pair<T, int> TwoThreeHeap<T>::PopMinimum() {
@@ -553,23 +552,22 @@ template <typename T> std::pair<T, int> TwoThreeHeap<T>::PopMinimum() {
     InsertRoot_(child);
   }
 
-  auto result = std::make_pair(min_root->value(), min_root->key());
-  key_to_node_.erase(min_root->key());
+  auto result = std::make_pair(min_root->key(), min_root->id());
+  id_to_node_.erase(min_root->id());
   delete min_root;
   return result;
 }
 
-template <typename T> void TwoThreeHeap<T>::ReduceValue(T new_value, int key) {
-  auto *node = key_to_node_[key];
-
-  node->set_value(new_value);
+template <typename T> void TwoThreeHeap<T>::ReduceKey(T new_key, int id) {
+  auto *node = id_to_node_[id];
+  node->set_key(new_key);
 
   // Check if we need to reparent.
-  if (node->is_root() || !(new_value < node->parent()->value())) {
+  if (node->is_root() || !(new_key < node->parent()->key())) {
 
     // If the node is secondary and is now smaller, make it primary.
     auto *partner = node->partner();
-    if (node->is_secondary() && new_value < partner->value()) {
+    if (node->is_secondary() && new_key < partner->key()) {
       partner->SwapPartner();
     }
     return;
@@ -584,12 +582,12 @@ template <typename T> void TwoThreeHeap<T>::ReduceValue(T new_value, int key) {
   InsertRoot_(node);
 }
 
-template <typename T> const T *TwoThreeHeap<T>::LookUp(int key) const {
-  const auto it = key_to_node_.find(key);
-  if (it == key_to_node_.end()) {
+template <typename T> const T *TwoThreeHeap<T>::LookUp(int id) const {
+  const auto it = id_to_node_.find(id);
+  if (it == id_to_node_.end()) {
     return nullptr;
   }
-  return &it->second->value();
+  return &it->second->key();
 }
 
 template <typename T>
@@ -610,25 +608,25 @@ void TwoThreeHeap<T>::PrintTree(std::ostream &out,
 
 template <typename T> void TwoThreeHeap<T>::Validate() const {
   int dimension = 0;
-  std::unordered_set<int> seen_keys;
+  std::unordered_set<int> seen_ids;
   for (int i = 0; i <= max_root_dim_; ++i) {
     const auto *sentinel = sentinels_[i];
     const auto *root = sentinel->child();
     if (root != nullptr) {
       CHECK(root->parent() == sentinel);
       CHECK(root->dimension() == dimension);
-      root->Validate(&seen_keys);
+      root->Validate(&seen_ids);
     }
     dimension++;
   }
 
-  if (seen_keys.size() != size()) {
-    for (const auto &entry : key_to_node_) {
-      if (seen_keys.find(entry.first) == seen_keys.end()) {
-        LOG(ERROR) << "Key not seen: " << entry.first << std::endl;
+  if (seen_ids.size() != size()) {
+    for (const auto &entry : id_to_node_) {
+      if (seen_ids.find(entry.first) == seen_ids.end()) {
+        LOG(ERROR) << "Id not seen: " << entry.first << std::endl;
       }
     }
-    LOG(FATAL) << "Some keys are missing";
+    LOG(FATAL) << "Some ids are missing";
   }
 }
 
@@ -642,7 +640,7 @@ template <typename T> TwoThreeNode<T> *TwoThreeHeap<T>::Min_() const {
     if (root == nullptr) {
       continue;
     }
-    if (min_node == nullptr || root->value() < min_node->value()) {
+    if (min_node == nullptr || root->key() < min_node->key()) {
       min_node = root;
     }
   }
@@ -686,6 +684,12 @@ template <typename T> void TwoThreeHeap<T>::RemoveTree_(TwoThreeNode<T> *tree) {
     return;
   }
 
+  if (tree->is_root()) {
+    ClearRoot_(tree->dimension());
+    tree->DetachFromParent();
+    return;
+  }
+
   // Examine trunk of parent's partner.
   auto *pp = parent->partner();
   if (pp != nullptr && pp->dimension() == dim) {
@@ -720,7 +724,7 @@ template <typename T> void TwoThreeHeap<T>::RemoveTree_(TwoThreeNode<T> *tree) {
       tree->DetachFromParent();
       parent->DetachFromTrunk();
       pp_child->AttachPartner(parent);
-      if (parent->value() < pp_child->value()) {
+      if (parent->key() < pp_child->key()) {
         pp_child->SwapPartner();
       }
     }
@@ -796,7 +800,7 @@ TwoThreeNode<T> *TwoThreeHeap<T>::MakeTrunk_(TwoThreeNode<T> *a,
     DCHECK(a->partner() == nullptr);
     return a;
   }
-  if (b->value() < a->value()) {
+  if (b->key() < a->key()) {
     b->AttachPartner(a);
     return b;
   }
@@ -831,7 +835,8 @@ template <typename T> void TwoThreeHeap<T>::ClearRoot_(short dim) {
   if (dim == max_root_dim_) {
     do {
       max_root_dim_--;
-    } while (max_root_dim_ >= 0 && sentinels_[max_root_dim_]->child() == nullptr);
+    } while (max_root_dim_ >= 0 &&
+             sentinels_[max_root_dim_]->child() == nullptr);
   }
 }
 

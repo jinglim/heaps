@@ -24,37 +24,37 @@ const bool kDebugPrintOperations = false;
 // If true, print out the heap in tree format after each operation.
 const bool kDebugPrintHeaps = false;
 
-// Keeps track of a set of int key values.
-class Keys {
+// Keeps track of a set of int ids.
+class IdSet {
 public:
-  size_t size() const { return keys_.size(); }
+  size_t size() const { return ids_.size(); }
 
   // Returns a key at the specific index (between 0 and size() - 1).
   int get(int index) const {
     CHECK(index >= 0 && index < size());
-    return keys_[index];
+    return ids_[index];
   }
 
-  // Add a key to the set.
-  void Add(int key) { keys_.push_back(key); }
+  // Add an id to the set.
+  void Add(int id) { ids_.push_back(id); }
 
   // Remove a key.
-  void Remove(int key) {
-    for (int i = 0; i < keys_.size(); i++) {
-      if (keys_[i] == key) {
-        int last_key = keys_.back();
-        keys_.pop_back();
-        if (keys_.size() > 0) {
-          keys_[i] = last_key;
+  void Remove(int id) {
+    for (int i = 0; i < ids_.size(); i++) {
+      if (ids_[i] == id) {
+        int last_id = ids_.back();
+        ids_.pop_back();
+        if (ids_.size() > 0) {
+          ids_[i] = last_id;
         }
         return;
       }
     }
-    LOG(FATAL) << "Key not found";
+    LOG(FATAL) << "Id not found";
   }
 
 private:
-  std::vector<int> keys_;
+  std::vector<int> ids_;
 };
 
 // Runs tests on a give Heap data structure.
@@ -62,16 +62,17 @@ template <typename T> class HeapTester {
 public:
   HeapTester(std::unique_ptr<Heap<T>> heap) : heap_(std::move(heap)) {}
 
-  void Add(T value, int key) {
+  void Add(T key, int id) {
     if (kDebugPrintOperations) {
-      LOG(INFO) << "[Test] Add: " << value;
+      LOG(INFO) << "[Test] Add: " << key;
     }
-    heap_->Add(value, key);
+    heap_->Add(key, id);
     CheckHeap_();
 
-    keys_.Add(key);
-    CHECK(heap_->size() == keys_.size());
-    CHECK(*heap_->LookUp(key) == value);
+    ids_.Add(id);
+    CHECK(heap_->size() == ids_.size());
+    const T *lookup_key = heap_->LookUp(id);
+    CHECK(lookup_key != nullptr && *lookup_key == key);
   }
 
   std::pair<T, int> PopMinimum() {
@@ -84,42 +85,42 @@ public:
     CheckHeap_();
     CHECK(min == min2);
 
-    keys_.Remove(min2.second);
-    CHECK(heap_->size() == keys_.size());
+    ids_.Remove(min2.second);
+    CHECK(heap_->size() == ids_.size());
 
     return min;
   }
 
-  // Perform a ReduceValue on the heap.
-  void ReduceValue(T new_value, int key) {
+  // Perform a ReduceKey operation on the heap.
+  void ReduceKey(T new_key, int id) {
     if (kDebugPrintOperations) {
-      LOG(INFO) << "[Test] ReduceValue: " << new_value;
+      LOG(INFO) << "[Test] ReduceKey: " << new_key;
     }
 
-    heap_->ReduceValue(new_value, key);
+    heap_->ReduceKey(new_key, id);
     CheckHeap_();
 
-    CHECK(*heap_->LookUp(key) == new_value);
-    CHECK(heap_->size() == keys_.size());
+    CHECK(*heap_->LookUp(id) == new_key);
+    CHECK(heap_->size() == ids_.size());
   }
 
-  // Randomly reduce a value in the heap.
-  void RandomReduceValue() {
-    int key = keys_.get(std::rand() % keys_.size());
-    int value = *heap_->LookUp(key);
-    int new_value = value - (std::rand() % 1000);
-    if (new_value < 0) {
-      new_value = 0;
+  // Randomly reduce a key in the heap.
+  void RandomReduceKey() {
+    int id = ids_.get(std::rand() % ids_.size());
+    int key = *heap_->LookUp(id);
+    int new_key = key - (std::rand() % 1000);
+    if (new_key < 0) {
+      new_key = 0;
     }
-    ReduceValue(new_value, key);
+    ReduceKey(new_key, id);
   }
 
   // Tests Add and Pop operations on the heap.
   void TestAddAndPop(int num_elements) {
     CHECK(heap_->empty());
     for (int i = 0; i < num_elements; i++) {
-      int value = i * 10;
-      Add(value, i);
+      int key = i * 10;
+      Add(key, i);
       CHECK(heap_->Min().first == 0);
     }
     CHECK(!heap_->empty());
@@ -132,18 +133,18 @@ public:
     Clear_();
   }
 
-  // Tests ReduceValue operations on the heap.
-  void TestReduceValue(int num_elements) {
+  // Tests ReduceKey operations on the heap.
+  void TestReduceKey(int num_elements) {
     for (int i = 0; i < num_elements; ++i) {
       Add(i * 100, i);
     }
 
     for (int i = 0; i < num_elements; ++i) {
       int pos = std::rand() % 100;
-      int value = *heap_->LookUp(pos);
-      int new_value = value * 3 / 4;
+      int key = *heap_->LookUp(pos);
+      int new_key = key * 3 / 4;
 
-      ReduceValue(new_value, pos);
+      ReduceKey(new_key, pos);
     }
     Clear_();
   }
@@ -151,12 +152,12 @@ public:
   void TestRandomOperations(int num_elements, int num_operations) {
     for (int i = 0; i < num_operations; ++i) {
       if (heap_->size() < num_elements) {
-        int value = std::rand();
-        Add(value, i);
+        int key = std::rand();
+        Add(key, i);
       }
 
-      RandomReduceValue();
-      RandomReduceValue();
+      RandomReduceKey();
+      RandomReduceKey();
 
       if (heap_->size() > 0 && std::rand() % 2 == 0) {
         PopMinimum();
@@ -164,7 +165,7 @@ public:
     }
 
     for (int i = 0; i < num_operations; ++i) {
-      RandomReduceValue();
+      RandomReduceKey();
     }
 
     Clear_();
@@ -187,7 +188,7 @@ private:
   }
 
   std::unique_ptr<Heap<T>> heap_;
-  Keys keys_;
+  IdSet ids_;
 };
 
 // Run all tests on heaps created by the given heap factory.
@@ -201,7 +202,7 @@ void RunTests(Factory<Heap<int>> factory) {
   {
     const int num_elements = 1000;
     HeapTester<int> tester(factory());
-    tester.TestReduceValue(num_elements);
+    tester.TestReduceKey(num_elements);
   }
   {
     const int num_elements = 1000;

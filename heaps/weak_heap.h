@@ -26,19 +26,19 @@ public:
     return static_cast<int>(elements_.size());
   }
 
-  // Adds a value with the associated key.
-  virtual void Add(T value, int key) override;
+  // Adds an element with key and unique int id.
+  virtual void Add(T key, int id) override;
 
-  // Updates an element with a lower value.
-  virtual void ReduceValue(T new_value, int key) override;
+  // Updates an element with a lower key.
+  virtual void ReduceKey(T new_key, int id) override;
 
-  // Looks up a value by its key. Returns nullptr if not found.
-  virtual const T *LookUp(int key) const override;
+  // Looks up a key by its id. Returns nullptr if not found.
+  virtual const T *LookUp(int id) const override;
 
   // Returns the minimum element.
   virtual HeapElement<T> Min() const override;
 
-  // Pops and returns the minimum value.
+  // Pops and returns the minimum key.
   virtual HeapElement<T> PopMinimum() override;
 
   // Print the subtree under this node.
@@ -54,7 +54,7 @@ private:
   // Move the top element downwards until the constraints are satisfied.
   void SiftDown_();
 
-  // Set a value at particular position and update index.
+  // Set an element at particular position and update index.
   void SetElement_(int pos, HeapElement<T> &&element);
 
   // Print the heap.
@@ -71,14 +71,14 @@ private:
   // the element at (i * 2 + 1) is the child. If 1, it's the reverse.
   std::vector<char> reverse_children_;
 
-  // A map from the element int key to its index in `elements_` vector.
-  std::unordered_map<int, int> key_to_index_;
+  // A map from the element int id to its index in `elements_` vector.
+  std::unordered_map<int, int> id_to_index_;
 };
 
-template <typename T> void WeakHeap<T>::Add(T value, int key) {
+template <typename T> void WeakHeap<T>::Add(T key, int id) {
   int pos = static_cast<int>(elements_.size());
-  CHECK(key_to_index_.emplace(key, pos).second);
-  elements_.emplace_back(value, key);
+  CHECK(id_to_index_.emplace(id, pos).second);
+  elements_.emplace_back(key, id);
   reverse_children_.push_back(0);
   SiftUp_(pos);
 }
@@ -140,9 +140,9 @@ template <typename T> void WeakHeap<T>::SiftDown_() {
   SetElement_(0, std::move(top_element));
 }
 
-template <typename T> const T *WeakHeap<T>::LookUp(int key) const {
-  const auto it = key_to_index_.find(key);
-  if (it == key_to_index_.end()) {
+template <typename T> const T *WeakHeap<T>::LookUp(int id) const {
+  const auto it = id_to_index_.find(id);
+  if (it == id_to_index_.end()) {
     return nullptr;
   }
   return &elements_[it->second].first;
@@ -154,7 +154,7 @@ template <typename T> HeapElement<T> WeakHeap<T>::Min() const {
 
 template <typename T> HeapElement<T> WeakHeap<T>::PopMinimum() {
   DCHECK(!elements_.empty());
-  key_to_index_.erase(elements_[0].second);
+  id_to_index_.erase(elements_[0].second);
   auto min_element = std::move(elements_[0]);
 
   if (elements_.size() == 1) {
@@ -168,18 +168,18 @@ template <typename T> HeapElement<T> WeakHeap<T>::PopMinimum() {
   return std::move(min_element);
 }
 
-template <typename T> void WeakHeap<T>::ReduceValue(T new_value, int key) {
-  auto it = key_to_index_.find(key);
-  CHECK(it != key_to_index_.end());
+template <typename T> void WeakHeap<T>::ReduceKey(T new_key, int id) {
+  auto it = id_to_index_.find(id);
+  CHECK(it != id_to_index_.end());
   int index = it->second;
-  CHECK(!(elements_[index].first < new_value));
-  elements_[index].first = new_value;
+  CHECK(!(elements_[index].first < new_key));
+  elements_[index].first = new_key;
   SiftUp_(index);
 }
 
 template <typename T>
 void WeakHeap<T>::SetElement_(int pos, HeapElement<T> &&element) {
-  key_to_index_[element.second] = pos;
+  id_to_index_[element.second] = pos;
   elements_[pos] = std::move(element);
 }
 
@@ -203,7 +203,7 @@ void WeakHeap<T>::Print_(int pos, std::ostream &out, int level) const {
     out << "| ";
   }
   const auto &element = elements_[pos];
-  out << element.first << " [pos: " << pos << "][key:" << element.second
+  out << element.first << " [pos: " << pos << "][id:" << element.second
       << "][reverse: " << static_cast<int>(reverse_children_[pos]) << "]"
       << std::endl;
 }
@@ -245,10 +245,10 @@ template <typename T> void WeakHeap<T>::Validate() const {
     CHECK(!(elements_[pos].first < elements_[ancestor].first));
   }
   for (int pos = 0; pos < elements_.size(); ++pos) {
-    CHECK(key_to_index_.find(elements_[pos].second)->second == pos);
+    CHECK(id_to_index_.find(elements_[pos].second)->second == pos);
   }
 
-  CHECK(key_to_index_.size() == elements_.size());
+  CHECK(id_to_index_.size() == elements_.size());
 }
 
 #endif /* HEAPS_WEAK_HEAP_H_ */

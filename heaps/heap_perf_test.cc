@@ -45,8 +45,8 @@ public:
 
     timer->Start();
     for (int i = 0; i < params.num_elements; ++i) {
-      int value = std::rand();
-      heap->Add(value, i);
+      int key = std::rand();
+      heap->Add(key, i);
     }
     timer->Stop();
     timer->Report("Add");
@@ -61,8 +61,8 @@ public:
     auto *heap = heap_pointer.get();
 
     for (int i = 0; i < params.num_elements; ++i) {
-      int value = std::rand();
-      heap->Add(value, i);
+      int key = std::rand();
+      heap->Add(key, i);
     }
 
     timer->Start();
@@ -83,8 +83,8 @@ public:
 
     timer->Start();
     for (int i = 0; i < params.num_elements; ++i) {
-      int value = std::rand();
-      heap->Add(value, i);
+      int key = std::rand();
+      heap->Add(key, i);
     }
     for (int i = 0; i < params.num_elements; ++i) {
       heap->PopMinimum();
@@ -95,29 +95,29 @@ public:
 };
 
 // Performance test for reducing a value in a Heap.
-class ReduceValuePerfTestRunner : public PerfTestRunner<PerfTestParams> {
+class ReduceKeyPerfTestRunner : public PerfTestRunner<PerfTestParams> {
 public:
   void Run(PerfTimer *timer, const PerfTestParams &params) const override {
     std::unique_ptr<Heap<int>> heap_pointer(params.heap_factory());
     auto *heap = heap_pointer.get();
 
     for (int i = 0; i < params.num_elements; ++i) {
-      int value = std::rand();
-      heap->Add(value, i);
+      int key = std::rand();
+      heap->Add(key, i);
     }
 
     timer->Start();
     for (int i = 0; i < params.num_operations; ++i) {
       int index = std::rand() % heap->size();
-      int value = *heap->LookUp(index);
-      int new_value = value - (std::rand() % 100);
-      if (new_value <= 0) {
-        new_value = 0;
+      int key = *heap->LookUp(index);
+      int new_key = key - (std::rand() % 100);
+      if (new_key <= 0) {
+        new_key = 0;
       }
-      heap->ReduceValue(new_value, index);
+      heap->ReduceKey(new_key, index);
     }
     timer->Stop();
-    timer->Report("ReduceValue");
+    timer->Report("ReduceKey");
   }
 };
 
@@ -128,10 +128,10 @@ public:
     std::unique_ptr<Heap<int>> heap_pointer(params.heap_factory());
     auto *heap = heap_pointer.get();
 
-    int key_counter = 0;
+    int id_counter = 0;
     int num_pops = 0;
     int num_adds = 0;
-    int num_reduce_values = 0;
+    int num_reduce_keys = 0;
 
     timer->Start();
     for (int i = 0; i < params.num_operations; ++i) {
@@ -141,25 +141,25 @@ public:
       }
       {
         int value = std::rand();
-        heap->Add(value, key_counter++);
+        heap->Add(value, id_counter++);
         num_adds++;
       }
       if (heap->size() < params.num_elements) {
-        int value = std::rand();
-        heap->Add(value, key_counter++);
+        int key = std::rand();
+        heap->Add(key, id_counter++);
         num_adds++;
       }
 
       {
-        int key = std::rand() % key_counter;
-        auto result = heap->LookUp(key);
+        int id = std::rand() % id_counter;
+        auto result = heap->LookUp(id);
         if (result != nullptr) {
-          int new_value = *result - (std::rand() % 100);
-          if (new_value <= 0) {
-            new_value = 0;
+          int new_key = *result - (std::rand() % 1000);
+          if (new_key <= 0) {
+            new_key = 0;
           }
-          heap->ReduceValue(new_value, key);
-          num_reduce_values++;
+          heap->ReduceKey(new_key, id);
+          num_reduce_keys++;
         }
       }
     }
@@ -173,7 +173,7 @@ public:
 
     std::stringstream description;
     description << "adds: " << num_adds << ", pops: " << num_pops
-                << ", reduce values:" << num_reduce_values;
+                << ", reduce-keys:" << num_reduce_keys;
     timer->Report("AllOperations(" + description.str() + ")");
   }
 };
@@ -222,7 +222,7 @@ void RunPerfTests(Factory<Heap<int>> factory) {
     RunOnePerfTestAve(&runner, params, num_runs);
   }
   {
-    ReduceValuePerfTestRunner runner;
+    ReduceKeyPerfTestRunner runner;
     RunOnePerfTestAve(&runner, params, num_runs);
   }
   {
