@@ -4,6 +4,7 @@ cc_library(
     hdrs = [
         "binary_heap.h",
         "binomial_heap.h",
+        "fibonacci_heap.h",
         "heap.h",
         "pairing_heap.h",
         "two_three_heap.h",

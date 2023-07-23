@@ -11,13 +11,14 @@
 #include "base/perf.h"
 #include "heaps/binary_heap.h"
 #include "heaps/binomial_heap.h"
+#include "heaps/fibonacci_heap.h"
 #include "heaps/pairing_heap.h"
 #include "heaps/two_three_heap.h"
 #include "heaps/weak_heap.h"
 
 ABSL_FLAG(std::string, heap, "",
           "one of {binary_heap, binomial_heap, pairing_heap, two_three_heap, "
-          "weak_heap}");
+          "weak_heap, fibonacci_heap}");
 
 namespace {
 // Parameters for a Heap Performance Test.
@@ -110,7 +111,7 @@ public:
     for (int i = 0; i < params.num_operations; ++i) {
       int index = std::rand() % heap->size();
       int key = *heap->LookUp(index);
-      int new_key = key - (std::rand() % 100);
+      int new_key = key - (std::rand() % (key / 4));
       if (new_key <= 0) {
         new_key = 0;
       }
@@ -154,7 +155,8 @@ public:
         int id = std::rand() % id_counter;
         auto result = heap->LookUp(id);
         if (result != nullptr) {
-          int new_key = *result - (std::rand() % 1000);
+          int key = *result;
+          int new_key = key - (std::rand() % (key / 4));
           if (new_key <= 0) {
             new_key = 0;
           }
@@ -240,6 +242,7 @@ int main(int argc, char *argv[]) {
   std::unordered_map<std::string, Factory<Heap<int>>> heap_factories{
       {"binary_heap", BinaryHeap<int>::factory()},
       {"binomial_heap", BinomialHeap<int>::factory()},
+      {"fibonacci_heap", FibonacciHeap<int>::factory()},
       {"weak_heap", WeakHeap<int>::factory()},
       {"pairing_heap", PairingHeap<int>::factory()},
       {"two_three_heap", TwoThreeHeap<int>::factory()}};

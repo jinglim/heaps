@@ -433,7 +433,7 @@ template <typename T> void BinomialHeap<T>::Validate() const {
   if (seen_ids.size() != size()) {
     for (const auto &entry : id_to_node_) {
       if (seen_ids.find(entry.first) == seen_ids.end()) {
-        LOG(ERROR) << "Id not seen: " << entry.first;
+        LOG(ERROR) << "Id not seen: " << entry.first << std::endl;
       }
     }
     LOG(FATAL) << "Some ids are missing";

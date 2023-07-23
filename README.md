@@ -31,6 +31,11 @@ Reference: [https://en.wikipedia.org/wiki/2%E2%80%933_heap].
 
 The implementation of this heap is quite challenging. Can probably be simplified and optimized.
 
+## Fibonacci Heap
+Reference: [https://en.wikipedia.org/wiki/Fibonacci_heap].
+
+This implementation is based on the description in Wikipedia.
+
 ## Graph
 This is a relatively simple immutable Graph class. Use GraphBuilder to build a Graph object.
 
@@ -39,10 +44,6 @@ Shortest path implementations against a weighted directed graph.
 Two implementations are provided:
 * BfsShortestPath - a naive BFS traversal implementation.
 * DijkstraShortestPath - a typical Dijkstra's algorithm.
-
-## Next
-* 2-3 Heap
-* Performance tests
 
 ## Feedback
 Send comments and feedbacks to jinglim@gmail.com.

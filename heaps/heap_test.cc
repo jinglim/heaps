@@ -10,6 +10,7 @@
 
 #include "heaps/binary_heap.h"
 #include "heaps/binomial_heap.h"
+#include "heaps/fibonacci_heap.h"
 #include "heaps/pairing_heap.h"
 #include "heaps/two_three_heap.h"
 #include "heaps/weak_heap.h"
@@ -22,23 +23,17 @@ const unsigned kRandomSeed = 12346789;
 const bool kDebugPrintOperations = false;
 
 // If true, print out the heap in tree format after each operation.
-const bool kDebugPrintHeaps = false;
+const bool kDebugPrintTree = false;
 
 // Keeps track of a set of int ids.
 class IdSet {
 public:
   size_t size() const { return ids_.size(); }
 
-  // Returns a key at the specific index (between 0 and size() - 1).
-  int get(int index) const {
-    CHECK(index >= 0 && index < size());
-    return ids_[index];
-  }
-
   // Add an id to the set.
   void Add(int id) { ids_.push_back(id); }
 
-  // Remove a key.
+  // Remove an id.
   void Remove(int id) {
     for (int i = 0; i < ids_.size(); i++) {
       if (ids_[i] == id) {
@@ -51,6 +46,12 @@ public:
       }
     }
     LOG(FATAL) << "Id not found";
+  }
+
+  // Returns a random id.
+  int RandomId() const {
+    CHECK(size() > 0);
+    return ids_[rand() % size()];
   }
 
 private:
@@ -106,9 +107,11 @@ public:
 
   // Randomly reduce a key in the heap.
   void RandomReduceKey() {
-    int id = ids_.get(std::rand() % ids_.size());
-    int key = *heap_->LookUp(id);
-    int new_key = key - (std::rand() % 1000);
+    CHECK(ids_.size() > 0);
+    int id = ids_.RandomId();
+    const T *key = heap_->LookUp(id);
+    CHECK(key != nullptr);
+    int new_key = *key - (std::rand() % (*key / 4));
     if (new_key < 0) {
       new_key = 0;
     }
@@ -140,7 +143,7 @@ public:
     }
 
     for (int i = 0; i < num_elements; ++i) {
-      int pos = std::rand() % 100;
+      int pos = std::rand() % num_elements;
       int key = *heap_->LookUp(pos);
       int new_key = key * 3 / 4;
 
@@ -157,10 +160,16 @@ public:
       }
 
       RandomReduceKey();
-      RandomReduceKey();
 
-      if (heap_->size() > 0 && std::rand() % 2 == 0) {
+      if (heap_->size() > 0 && std::rand() % 4 == 0) {
         PopMinimum();
+      }
+      if (heap_->size() > 0 && std::rand() % 4 == 0) {
+        PopMinimum();
+      }
+
+      if (heap_->size() > 0) {
+        RandomReduceKey();
       }
     }
 
@@ -174,7 +183,7 @@ public:
 private:
   // Check that the heap is well formed.
   void CheckHeap_() {
-    if (kDebugPrintHeaps) {
+    if (kDebugPrintTree) {
       heap_->PrintTree(std::cerr, "[CheckHeap_]");
     }
     heap_->Validate();
@@ -217,7 +226,7 @@ void RunAllHeapTests() {
   std::vector<Factory<Heap<int>>> heap_factories{
       BinaryHeap<int>::factory(),   BinomialHeap<int>::factory(),
       WeakHeap<int>::factory(),     PairingHeap<int>::factory(),
-      TwoThreeHeap<int>::factory(),
+      TwoThreeHeap<int>::factory(), FibonacciHeap<int>::factory(),
   };
 
   for (const auto &factory : heap_factories) {
