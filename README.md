@@ -1,4 +1,4 @@
-# Heaps
+# Heaps, Priority Queues, Shortest Path
 This project is an exploration of Heap data structures and their use in shortest path computation.
 
 These are implemented in C++, built using Bazel.
