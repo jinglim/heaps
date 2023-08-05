@@ -6,6 +6,11 @@
 #include "graph/weighted_graph.h"
 #include "shortest_path/shortest_path.h"
 
+namespace {
+// Print number of Heap operations.
+const bool kDebugPrintStats = false;
+} // namespace
+
 // Distance from start vertex to this vertex.
 // Used by DijkstraShortestPath to keep track of min distance to the vertex.
 template <typename T> struct DistanceNode {
@@ -53,6 +58,10 @@ template <typename T>
 std::unordered_map<VertexId, Path<T>>
 DijkstraShortestPath<T>::Run(const WeightedGraph<T> &weighted_graph,
                              VertexId start_vertex_id) {
+  int num_adds = 0;
+  int num_pops = 0;
+  int num_reduce_keys = 0;
+
   // Maps a vertex to previous vertex in its shortest path.
   std::unordered_map<VertexId, VertexId> prev_vertex_map;
 
@@ -62,6 +71,7 @@ DijkstraShortestPath<T>::Run(const WeightedGraph<T> &weighted_graph,
 
   // Initial distance = 0.
   heap->Add(DistanceNode<T>(start_vertex_id, 0), start_vertex_id);
+  num_adds++;
 
   const auto *graph = weighted_graph.graph.get();
   const auto *distances = weighted_graph.edge_weights.get();
@@ -70,6 +80,7 @@ DijkstraShortestPath<T>::Run(const WeightedGraph<T> &weighted_graph,
   while (!heap->empty()) {
     // Pop the node with shortest distance and add to result.
     DistanceNode<T> min_distance_node = heap->PopMinimum().first;
+    num_pops++;
 
     // Skip if the shortest path is already found.
     if (!results
@@ -96,10 +107,12 @@ DijkstraShortestPath<T>::Run(const WeightedGraph<T> &weighted_graph,
       const DistanceNode<T> *to_node = heap->LookUp(to_id);
       if (to_node == nullptr) {
         heap->Add(DistanceNode<T>{to_id, total_distance}, to_id);
+        num_adds++;
         prev_vertex_map[to_id] = min_distance_node.vertex_id;
       } else if (total_distance < to_node->distance) {
         // Update the DistanceNode with a shorter distance.
         heap->ReduceKey(DistanceNode<T>{to_id, total_distance}, to_id);
+        num_reduce_keys++;
         prev_vertex_map[to_id] = min_distance_node.vertex_id;
       }
     }
@@ -118,6 +131,11 @@ DijkstraShortestPath<T>::Run(const WeightedGraph<T> &weighted_graph,
     path.vertices.push_back(start_vertex_id);
 
     std::reverse(path.vertices.begin(), path.vertices.end());
+  }
+
+  if (kDebugPrintStats) {
+    LOG(INFO) << "Heap operations: Adds: " << num_adds << " Pops: " << num_pops
+              << " ReduceKeys: " << num_reduce_keys;
   }
 
   return std::move(results);

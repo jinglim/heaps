@@ -12,6 +12,7 @@
 #include "heaps/binomial_heap.h"
 #include "heaps/fibonacci_heap.h"
 #include "heaps/pairing_heap.h"
+#include "heaps/thin_heap.h"
 #include "heaps/two_three_heap.h"
 #include "heaps/weak_heap.h"
 
@@ -213,9 +214,9 @@ void RunTests(Factory<Heap<int>> factory) {
     HeapTester<int> tester(factory());
     tester.TestReduceKey(num_elements);
   }
-  {
-    const int num_elements = 1000;
-    const int num_operations = 10000;
+  for (int i = 0; i < 10; i++) {
+    const int num_elements = 5000;
+    const int num_operations = 5000;
     HeapTester<int> tester(factory());
     tester.TestRandomOperations(num_elements, num_operations);
   }
@@ -227,7 +228,7 @@ void RunAllHeapTests() {
       BinaryHeap<int>::factory(),   BinomialHeap<int>::factory(),
       WeakHeap<int>::factory(),     PairingHeap<int>::factory(),
       TwoThreeHeap<int>::factory(), FibonacciHeap<int>::factory(),
-  };
+      ThinHeap<int>::factory()};
 
   for (const auto &factory : heap_factories) {
     LOG(INFO) << "Testing " << factory.name();

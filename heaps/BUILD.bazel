@@ -7,6 +7,7 @@ cc_library(
         "fibonacci_heap.h",
         "heap.h",
         "pairing_heap.h",
+        "thin_heap.h",
         "two_three_heap.h",
         "weak_heap.h",
     ],

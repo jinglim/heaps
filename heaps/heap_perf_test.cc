@@ -13,6 +13,7 @@
 #include "heaps/binomial_heap.h"
 #include "heaps/fibonacci_heap.h"
 #include "heaps/pairing_heap.h"
+#include "heaps/thin_heap.h"
 #include "heaps/two_three_heap.h"
 #include "heaps/weak_heap.h"
 
@@ -150,8 +151,7 @@ public:
         heap->Add(key, id_counter++);
         num_adds++;
       }
-
-      {
+      for (int n = 0; n < 4; n++) {
         int id = std::rand() % id_counter;
         auto result = heap->LookUp(id);
         if (result != nullptr) {
@@ -243,9 +243,10 @@ int main(int argc, char *argv[]) {
       {"binary_heap", BinaryHeap<int>::factory()},
       {"binomial_heap", BinomialHeap<int>::factory()},
       {"fibonacci_heap", FibonacciHeap<int>::factory()},
-      {"weak_heap", WeakHeap<int>::factory()},
       {"pairing_heap", PairingHeap<int>::factory()},
-      {"two_three_heap", TwoThreeHeap<int>::factory()}};
+      {"thin_heap", ThinHeap<int>::factory()},
+      {"two_three_heap", TwoThreeHeap<int>::factory()},
+      {"weak_heap", WeakHeap<int>::factory()}};
 
   std::string heap_flag = absl::GetFlag(FLAGS_heap);
   auto it = heap_factories.find(heap_flag);

@@ -3,6 +3,8 @@ This project is an exploration of Heap data structures and their use in shortest
 
 These are implemented in C++, built using Bazel.
 
+Pairing Heap has the best performance if the key values need to be decreased (e.g. for Dijkstra's Shortest Path algorithm). If you need only push and pop operations, just use a Binary Heap.
+
 Dependencies:
 * abseil-cpp library.
 
@@ -35,6 +37,11 @@ The implementation of this heap is quite challenging. Can probably be simplified
 Reference: [https://en.wikipedia.org/wiki/Fibonacci_heap].
 
 This implementation is based on the description in Wikipedia.
+
+## Thin Heap
+Reference: [https://www.cs.princeton.edu/courses/archive/spr04/cos423/handouts/thin%20heap.pdf]
+
+Thin Heap is an optimized version of Fibonacci Heap.
 
 ## Graph
 This is a relatively simple immutable Graph class. Use GraphBuilder to build a Graph object.

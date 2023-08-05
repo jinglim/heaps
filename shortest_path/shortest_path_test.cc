@@ -14,6 +14,7 @@
 #include "heaps/fibonacci_heap.h"
 #include "heaps/heap.h"
 #include "heaps/pairing_heap.h"
+#include "heaps/thin_heap.h"
 #include "heaps/two_three_heap.h"
 #include "heaps/weak_heap.h"
 #include "shortest_path/bfs_shortest_path.h"
@@ -166,6 +167,8 @@ void RunShortestPathTests() {
           TwoThreeHeap<DistanceNode<int>>::factory()),
       DijkstraShortestPath<int>::factory(
           FibonacciHeap<DistanceNode<int>>::factory()),
+      DijkstraShortestPath<int>::factory(
+          ThinHeap<DistanceNode<int>>::factory()),
   };
   ShortestPathTester tester{factories};
   tester.TestSimpleGraph();
