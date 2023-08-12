@@ -77,8 +77,11 @@ public:
                                          BinomialHeapNode<T> *b);
 
   // Merge two list of trees and their siblings (in ascending dimension).
-  static BinomialHeapNode<T> *MergeTreeList(BinomialHeapNode<T> *a,
-                                            BinomialHeapNode<T> *b);
+  static BinomialHeapNode<T> *MergeTreeLists(BinomialHeapNode<T> *a,
+                                             BinomialHeapNode<T> *b);
+
+  static BinomialHeapNode<T> *AddToTreeList(BinomialHeapNode<T> *tree,
+                                            BinomialHeapNode<T> *tree_list);
 
 private:
   T key_;
@@ -120,21 +123,66 @@ BinomialHeapNode<T> *BinomialHeapNode<T>::MergeTrees(BinomialHeapNode<T> *a,
 
 template <typename T>
 BinomialHeapNode<T> *
-BinomialHeapNode<T>::MergeTreeList(BinomialHeapNode<T> *a,
-                                   BinomialHeapNode<T> *b) {
+BinomialHeapNode<T>::AddToTreeList(BinomialHeapNode<T> *tree,
+                                   BinomialHeapNode<T> *tree_list) {
+  auto dim = tree->dimension();
+
+  // Iterate through the tree list until we find the place to insert or
+  // merge the `tree` node.
+  BinomialHeapNode<T> *prev_root = nullptr;
+  BinomialHeapNode<T> *next_root;
+  for (auto *curr_root = tree_list; curr_root != nullptr;
+       curr_root = next_root) {
+    next_root = curr_root->right_;
+
+    auto curr_root_dim = curr_root->dimension();
+    if (curr_root_dim < dim) {
+      prev_root = curr_root;
+    } else if (curr_root_dim == dim) {
+      // Detach the curr_root from the list.
+      if (prev_root != nullptr) {
+        prev_root->right_ = next_root;
+      } else {
+        tree_list = next_root;
+      }
+      curr_root->right_ = nullptr;
+
+      // Merging yields a carry tree of a higher dimension.
+      // Continue to merge the tree.
+      tree = BinomialHeapNode<T>::MergeTrees(curr_root, tree);
+      dim++;
+    } else {
+      // Insert tree into this list.
+      tree->right_ = curr_root;
+      break;
+    }
+  }
+
+  if (prev_root != nullptr) {
+    prev_root->right_ = tree;
+    return tree_list;
+  } else {
+    return tree;
+  }
+}
+
+template <typename T>
+BinomialHeapNode<T> *
+BinomialHeapNode<T>::MergeTreeLists(BinomialHeapNode<T> *a,
+                                    BinomialHeapNode<T> *b) {
   BinomialHeapNode<T> *node_a = a;
   BinomialHeapNode<T> *node_b = b;
 
-  BinomialHeapNode<T> merged_sentinel;
-  BinomialHeapNode<T> *merged = &merged_sentinel;
+  BinomialHeapNode<T> *result;
+  BinomialHeapNode<T> **merge_tail = &result;
 
   while (true) {
     if (node_a == nullptr) {
-      merged->right_ = node_b;
+      *merge_tail = node_b;
       break;
     }
     if (node_b == nullptr) {
-      merged->right_ = node_a;
+      *merge_tail = node_a;
       break;
     }
 
@@ -157,7 +205,7 @@ BinomialHeapNode<T>::MergeTreeList(BinomialHeapNode<T> *a,
         node_a = next_node_a;
         node_b = carry;
       } else {
-        node_a = MergeTreeList(carry, next_node_a);
+        node_a = AddToTreeList(carry, next_node_a);
         node_b = next_node_b;
       }
       continue;
@@ -165,17 +213,17 @@ BinomialHeapNode<T>::MergeTreeList(BinomialHeapNode<T> *a,
 
     // Append the lower dimension node to the merged list.
     if (node_a->dimension() < node_b->dimension()) {
-      merged->right_ = node_a;
-      merged = node_a;
+      *merge_tail = node_a;
+      merge_tail = &node_a->right_;
       node_a = node_a->right_;
     } else {
-      merged->right_ = node_b;
-      merged = node_b;
+      *merge_tail = node_b;
+      merge_tail = &node_b->right_;
       node_b = node_b->right_;
     }
   }
 
-  return merged_sentinel.right_;
+  return result;
 }
 
 template <typename T>
@@ -261,8 +309,6 @@ void BinomialHeapNode<T>::Validate(std::unordered_set<int> *seen_ids) const {
 }
 
 template <typename T> class BinomialHeap : public Heap<T> {
-  typedef Heap<T> super;
-
 public:
   BinomialHeap() : root_(nullptr) {}
   ~BinomialHeap() { BinomialHeapNode<T>::DeleteTree(root_); }
@@ -321,7 +367,7 @@ template <typename T> void BinomialHeap<T>::Add(T key, int id) {
   if (root_ == nullptr) {
     root_ = node;
   } else {
-    root_ = BinomialHeapNode<T>::MergeTreeList(root_, node);
+    root_ = BinomialHeapNode<T>::AddToTreeList(node, root_);
   }
 }
 
@@ -348,7 +394,7 @@ template <typename T> HeapElement<T> BinomialHeap<T>::Min() const {
 template <typename T>
 BinomialHeapNode<T> *
 BinomialHeap<T>::Min_(BinomialHeapNode<T> **prev_node) const {
-  DCHECK(!super::empty());
+  DCHECK(size() > 0);
 
   BinomialHeapNode<T> *prev = root_;
   BinomialHeapNode<T> *min_root = root_;
@@ -375,7 +421,7 @@ template <typename T> HeapElement<T> BinomialHeap<T>::PopMinimum() {
   }
 
   auto *children = min_root->DetachChildren();
-  root_ = BinomialHeapNode<T>::MergeTreeList(root_, children);
+  root_ = BinomialHeapNode<T>::MergeTreeLists(root_, children);
 
   auto result = std::make_pair(min_root->key(), min_root->id());
   id_to_node_.erase(min_root->id());
